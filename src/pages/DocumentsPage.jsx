@@ -3,11 +3,9 @@ import beaver from '../assets/beaver.png'
 import DocumentCard from '../components/DocumentCard'
 import Dropzone from '../components/DocumentDropzone'
 import FormMessage from '../components/FormMessage'
-import Sidebar from '../components/Sidebar'
+import PageShell, { BEAVER_POSITION, PRIMARY_PILL_CLASSES } from '../components/PageShell'
 import useAuth from '../context/useAuth'
 import { supabase } from '../lib/supabaseClient'
-
-const BEAVER_POSITION = 'pointer-events-none absolute left-[35%] top-14 hidden w-31 xl:block'
 
 // How long a download link stays valid. The bucket is private, so every URL is
 // signed. Known limitation: links are minted when the page loads, so a tab left
@@ -168,60 +166,54 @@ function DocumentsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-brand-bg p-3 text-brand-black sm:p-4">
-      <div className="mx-auto flex min-h-[calc(100vh-1.5rem)] max-w-[100rem] flex-col gap-4 sm:min-h-[calc(100vh-2rem)] md:flex-row md:gap-5">
-        <Sidebar />
+    <PageShell>
+      <header className="mb-6 flex flex-col gap-4 px-1 pt-2 sm:flex-row sm:items-start sm:justify-between sm:px-2 md:pt-7 lg:pt-9">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+            Hello, Stranger<span aria-hidden="true">✦</span>
+          </h1>
+          <p className="mt-1 text-base">Welcome to your documents archive</p>
+        </div>
+        <label
+          htmlFor="document-upload-input"
+          className={`cursor-pointer sm:w-auto ${PRIMARY_PILL_CLASSES}`}
+        >
+          + Add document
+        </label>
+      </header>
 
-        <section className="relative isolate flex min-w-0 flex-1 flex-col md:pl-2">
-          <header className="mb-6 flex flex-col gap-4 px-1 pt-2 sm:flex-row sm:items-start sm:justify-between sm:px-2 md:pt-7 lg:pt-9">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                Hello, Stranger<span aria-hidden="true">✦</span>
-              </h1>
-              <p className="mt-1 text-base">Welcome to your documents archive</p>
+      <img src={beaver} alt="" aria-hidden="true" className={BEAVER_POSITION} />
+
+      <div className="relative z-10 flex min-h-0 flex-1 flex-col gap-4">
+        <div className="rounded-[1.75rem] bg-brand-blue p-4 sm:rounded-[2.5rem] sm:p-6">
+          <h2 className="mb-4 text-lg font-semibold">Documents</h2>
+
+          {errorMessage && <FormMessage>{errorMessage}</FormMessage>}
+
+          {isLoading && <p className="text-sm">Loading your documents…</p>}
+
+          {!isLoading && documents.length === 0 && (
+            <p className="text-sm">
+              No documents yet — drop a file below to get started.
+            </p>
+          )}
+
+          {documents.length > 0 && (
+            <div className="flex flex-col gap-3">
+              {documents.map((doc) => (
+                <DocumentCard
+                  key={doc.id}
+                  {...doc}
+                  onDelete={handleDeleteDocument}
+                />
+              ))}
             </div>
-            <label
-              htmlFor="document-upload-input"
-              className="cursor-pointer rounded-full bg-brand-black px-7 py-3.5 text-base text-white sm:w-auto sm:px-9 sm:py-4"
-            >
-              + Add document
-            </label>
-          </header>
+          )}
+        </div>
 
-          <img src={beaver} alt="" aria-hidden="true" className={BEAVER_POSITION} />
-
-          <div className="relative z-10 flex min-h-0 flex-1 flex-col gap-4">
-            <div className="rounded-[1.75rem] bg-brand-blue p-4 sm:rounded-[2.5rem] sm:p-6">
-              <h2 className="mb-4 text-lg font-semibold">Documents</h2>
-
-              {errorMessage && <FormMessage>{errorMessage}</FormMessage>}
-
-              {isLoading && <p className="text-sm">Loading your documents…</p>}
-
-              {!isLoading && documents.length === 0 && (
-                <p className="text-sm">
-                  No documents yet — drop a file below to get started.
-                </p>
-              )}
-
-              {documents.length > 0 && (
-                <div className="flex flex-col gap-3">
-                  {documents.map((doc) => (
-                    <DocumentCard
-                      key={doc.id}
-                      {...doc}
-                      onDelete={handleDeleteDocument}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <Dropzone onFilesDropped={handleFilesDropped} />
-          </div>
-        </section>
+        <Dropzone onFilesDropped={handleFilesDropped} />
       </div>
-    </main>
+    </PageShell>
   )
 }
 

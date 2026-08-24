@@ -15,7 +15,7 @@ import beaverArms from '../assets/beaverArms.png'
 import grassDouble from '../assets/grassDouble.svg'
 import ApplicationCard from '../components/ApplicationCard'
 import ApplicationModal from '../components/ApplicationModal'
-import Sidebar from '../components/Sidebar'
+import PageShell, { BEAVER_POSITION, PRIMARY_PILL_CLASSES } from '../components/PageShell'
 import StatusColumn from '../components/StatusColumn'
 import {
   deleteApplication,
@@ -26,9 +26,11 @@ import {
 import useAuth from '../context/useAuth'
 import { COLUMNS } from './dashboardData'
 
-const BEAVER_POSITION = 'pointer-events-none absolute left-[35%] top-14 hidden w-31 xl:block'
 const NEW_APPLICATION_COLUMN = COLUMNS[0].title
 const OFFER_COLUMN = 'Offer'
+// Mirrors brand-yellow/blue/pink/green in src/styles/preset.css — canvas-confetti
+// needs literal color strings, so these can't reference the CSS custom
+// properties directly. Keep in sync if the palette changes.
 const CONFETTI_COLORS = ['#F5E0AE', '#A6C2D2', '#D9BFB1', '#B8D2C7']
 const EMPTY_ITEMS = COLUMNS.reduce((acc, column) => ({ ...acc, [column.title]: [] }), {})
 
@@ -181,89 +183,83 @@ function DashboardPage() {
   }
 
   return (
-    <main className="min-h-screen bg-brand-bg p-3 text-brand-black sm:p-4">
-      <div className="mx-auto flex min-h-[calc(100vh-1.5rem)] max-w-[100rem] flex-col gap-4 sm:min-h-[calc(100vh-2rem)] md:flex-row md:gap-5">
-        <Sidebar />
+    <PageShell>
+      <header className="mb-6 flex flex-col gap-4 px-1 pt-2 sm:flex-row sm:items-start sm:justify-between sm:px-2 md:pt-7 lg:pt-9">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+            Hello, Stranger<span aria-hidden="true">✦</span>
+          </h1>
+          <p className="mt-1 text-base">Welcome to your internship dashboard</p>
+          {isLoading && <p className="mt-1 text-xs text-brand-black/60">Loading your applications…</p>}
+          {loadError && (
+            <p className="mt-1 text-xs text-red-600">Couldn't load applications. Try refreshing.</p>
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={() => setIsModalOpen(true)}
+          className={`w-full transition hover:brightness-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-black sm:w-auto ${PRIMARY_PILL_CLASSES}`}
+        >
+          + Add application
+        </button>
+      </header>
 
-        <section className="relative isolate flex min-w-0 flex-1 flex-col md:pl-2">
-          <header className="mb-6 flex flex-col gap-4 px-1 pt-2 sm:flex-row sm:items-start sm:justify-between sm:px-2 md:pt-7 lg:pt-9">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                Hello, Stranger<span aria-hidden="true">✦</span>
-              </h1>
-              <p className="mt-1 text-base">Welcome to your internship dashboard</p>
-              {isLoading && <p className="mt-1 text-xs text-brand-black/60">Loading your applications…</p>}
-              {loadError && (
-                <p className="mt-1 text-xs text-red-600">Couldn't load applications. Try refreshing.</p>
-              )}
+      <img
+        src={beaver}
+        alt=""
+        aria-hidden="true"
+        className={`${BEAVER_POSITION} z-0`}
+      />
+
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCorners}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="relative z-10 grid flex-1 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {COLUMNS.map((column) => (
+            <StatusColumn
+              key={column.title}
+              id={column.title}
+              title={column.title}
+              tone={column.tone}
+              applications={items[column.title]}
+              onDeleteApplication={handleDeleteApplication}
+            />
+          ))}
+        </div>
+
+        <DragOverlay>
+          {activeApplication ? (
+            <div className="rotate-2">
+              <ApplicationCard {...activeApplication} />
             </div>
-            <button
-              type="button"
-              onClick={() => setIsModalOpen(true)}
-              className="w-full rounded-full bg-brand-black px-7 py-3.5 text-base text-white transition hover:brightness-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-black sm:w-auto sm:px-9 sm:py-4"
-            >
-              + Add application
-            </button>
-          </header>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
 
-          <img
-            src={beaver}
-            alt=""
-            aria-hidden="true"
-            className={`${BEAVER_POSITION} z-0`}
-          />
+      <img
+        src={beaverArms}
+        alt=""
+        aria-hidden="true"
+        className={`${BEAVER_POSITION} z-20`}
+      />
 
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCorners}
-            onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
-            onDragEnd={handleDragEnd}
-          >
-            <div className="relative z-10 grid flex-1 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              {COLUMNS.map((column) => (
-                <StatusColumn
-                  key={column.title}
-                  id={column.title}
-                  title={column.title}
-                  tone={column.tone}
-                  applications={items[column.title]}
-                  onDeleteApplication={handleDeleteApplication}
-                />
-              ))}
-            </div>
-
-            <DragOverlay>
-              {activeApplication ? (
-                <div className="rotate-2">
-                  <ApplicationCard {...activeApplication} />
-                </div>
-              ) : null}
-            </DragOverlay>
-          </DndContext>
-
-          <img
-            src={beaverArms}
-            alt=""
-            aria-hidden="true"
-            className={`${BEAVER_POSITION} z-20`}
-          />
-
-          <img
-            src={grassDouble}
-            alt=""
-            aria-hidden="true"
-            className="pointer-events-none absolute -bottom-2 right-[25%] z-20 hidden w-44 translate-x-1/2 opacity-80 xl:block"
-          />
-        </section>
-      </div>
+      <img
+        src={grassDouble}
+        alt=""
+        aria-hidden="true"
+        className="pointer-events-none absolute -bottom-2 right-[25%] z-20 hidden w-44 translate-x-1/2 opacity-80 xl:block"
+      />
 
       <ApplicationModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleAddApplication}
       />
-    </main>
+    </PageShell>
   )
 }
 
