@@ -198,3 +198,6 @@ A breakdown of who worked on what is on the project wiki.
 **Built with:** [React](https://react.dev/), [Vite](https://vitejs.dev/),
 [Tailwind CSS](https://tailwindcss.com/), [Supabase](https://supabase.com/), and
 [dnd kit](https://dndkit.com/).
+
+
+A1 Project board: https://github.com/users/Tech-A/projects/1/views/1
