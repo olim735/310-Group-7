@@ -1,5 +1,29 @@
 import { useEffect, useRef, useState } from "react";
 
+const FIELDS = [
+  { id: "company", label: "Company", placeholder: "Company Name" },
+  { id: "location", label: "Location", placeholder: "City, Country Code" },
+  { id: "role", label: "Role", placeholder: "Role" },
+  { id: "dueDate", label: "Due Date", type: "date" },
+];
+
+// Every field in the modal shares this look, so it's factored out rather
+// than repeated per field (see Field.jsx for the auth flow's equivalent).
+function ModalField({ label, type = "text", placeholder, value, onChange, error }) {
+  return (
+    <label className="flex flex-col gap-2">
+      <span className="font-medium text-brand-bg">{label} *</span>
+      <input
+        type={type}
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        className="min-w-0 rounded-full bg-input-bg px-5 py-3 text-brand-black outline-none placeholder:text-input-placeholder focus-visible:ring-2 focus-visible:ring-brand-yellow sm:py-3.5"
+      />
+      {error && <span className="px-2 text-sm text-red-300">{error}</span>}
+    </label>
+  );
+}
 
 function capitaliseWords(text){
       return text.trim().split(" ").filter(Boolean).map((word) => {
@@ -55,6 +79,9 @@ export default function ApplicationModal({ isOpen, onClose, onSubmit }) {
         return newErrors;
     }
 
+    const values = { company, location, role, dueDate };
+    const setters = { company: setCompany, location: setLocation, role: setRole, dueDate: setDueDate };
+
     function handleSubmit(e) {
         e.preventDefault();
         const newErrors = validate();
@@ -86,72 +113,27 @@ export default function ApplicationModal({ isOpen, onClose, onSubmit }) {
             className="absolute inset-0 cursor-default bg-transparent"
         />
 
-        <div className="relative w-full max-w-[480px]">
+        <div className="relative w-full max-w-120">
           <div className="relative z-20 flex items-center justify-center">
             <h2
               id="modal-title"
-              className="text-center text-3xl font-bold tracking-tight text-[#353434] sm:text-5xl"
+              className="text-center text-3xl font-bold tracking-tight text-brand-black sm:text-5xl"
             >
               ADD APPLICATION
             </h2>
           </div>
 
-            <div className="relative z-10 -mt-1 rounded-[24px] bg-[#353434] px-5 pb-6 pt-12 font-sans shadow-2xl sm:-mt-2 sm:rounded-[28px] sm:p-8 sm:pb-9 sm:pt-16">
+            <div className="relative z-10 -mt-1 rounded-3xl bg-brand-black px-5 pb-6 pt-12 font-sans shadow-2xl sm:-mt-2 sm:rounded-[28px] sm:p-8 sm:pb-9 sm:pt-16">
                 <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4 sm:gap-5">
-                <label className="flex flex-col gap-2">
-                <span className="font-medium text-brand-bg">Company *</span>
-                <input
-                  type="text"
-                  placeholder="Company Name"
-                  value={company}
-                  onChange={(e) => setCompany(e.target.value)}
-                  className="min-w-0 rounded-full bg-input-bg px-5 py-3 text-brand-black outline-none placeholder:text-input-placeholder focus-visible:ring-2 focus-visible:ring-brand-yellow sm:py-3.5"
-                />
-                {errors.company && (
-                  <span className="px-2 text-sm text-red-300">{errors.company}</span>
-                )}
-                </label>
-
-                <label className="flex flex-col gap-2">
-                <span className="font-medium text-brand-bg">Location *</span>
-                <input
-                  type="text"
-                  placeholder="City, Country Code"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  className="min-w-0 rounded-full bg-input-bg px-5 py-3 text-brand-black outline-none placeholder:text-input-placeholder focus-visible:ring-2 focus-visible:ring-brand-yellow sm:py-3.5"
-                />
-                {errors.location && (
-                  <span className="px-2 text-sm text-red-300">{errors.location}</span>
-                )}
-                </label>
-
-                <label className="flex flex-col gap-2">
-                <span className="font-medium text-brand-bg">Role *</span>
-                <input
-                  type="text"
-                  placeholder="Role"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  className="min-w-0 rounded-full bg-input-bg px-5 py-3 text-brand-black outline-none placeholder:text-input-placeholder focus-visible:ring-2 focus-visible:ring-brand-yellow sm:py-3.5"
-                />
-                {errors.role && (
-                  <span className="px-2 text-sm text-red-300">{errors.role}</span>
-                )}
-                </label>
-
-                <label className="flex flex-col gap-2">
-                <span className="font-medium text-brand-bg">Due Date *</span>
-                <input
-                  type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                  className="min-w-0 rounded-full bg-input-bg px-5 py-3 text-brand-black outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow sm:py-3.5"
-                />
-                {errors.dueDate && (
-                  <span className="px-2 text-sm text-red-300">{errors.dueDate}</span>
-                )}
-                </label>
+                {FIELDS.map((field) => (
+                  <ModalField
+                    key={field.id}
+                    {...field}
+                    value={values[field.id]}
+                    onChange={(e) => setters[field.id](e.target.value)}
+                    error={errors[field.id]}
+                  />
+                ))}
 
                 <button
                 type="submit"
